@@ -1,8 +1,9 @@
 <template>
   <div class="workbench-wrapper" @wheel="wheel">
-    <canvas ref="canvas" class="draw" width="800" height="400"></canvas>
-    <canvas ref="ruleX" class="rule-x" width="1680" height="20"></canvas>
-    <canvas ref="ruleY" class="rule-y" width="20" height="700"></canvas>
+    <canvas ref="canvas" class="draw"></canvas>
+    <canvas ref="ruleX" class="rule-x"></canvas>
+    <canvas ref="ruleY" class="rule-y"></canvas>
+    <div class="reset-button"></div>
   </div>
 </template>
 
@@ -20,8 +21,6 @@ export default class HelloWorld extends Vue {
   // method
   wheel(event: WheelEvent): void {
     const scale: number = this.scale + event.deltaY * -0.01;
-
-    // Restrict scale
     this.scale = Math.min(Math.max(0.125, scale), 4);
     const canvas = this.$refs.canvas as HTMLCanvasElement;
     canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
@@ -61,15 +60,19 @@ export default class HelloWorld extends Vue {
   .rule-x {
     position: absolute;
     top: 0;
-    left: 20px;
-    background: #191919;
+    left: 24px;
+    background: #0e1013;
+    width: 100%;
+    height: 24px;
   }
 
   .rule-y {
     position: absolute;
-    top: 20px;
+    top: 24px;
     left: 0;
-    background: #191919;
+    background: #0e1013;
+    height: 100%;
+    width: 200px;
   }
 }
 </style>
