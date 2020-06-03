@@ -1,6 +1,6 @@
 <template>
-  <div class="workbench-wrapper" @wheel="wheelDeBounce">
-    <canvas ref="canvas" class="draw"></canvas>
+  <div class="workbench-wrapper" @wheel="wheelStage">
+    <canvas ref="canvas" class="draw" @wheel="wheelDeBounce"></canvas>
     <canvas ref="ruleX" class="rule-x"></canvas>
     <canvas ref="ruleY" class="rule-y"></canvas>
     <div class="reset-button"></div>
@@ -36,38 +36,40 @@ export default class HelloWorld extends Vue {
   // method
   wheel(event: WheelEvent): void {
     const scale: number = this.scale + event.deltaY * -0.01;
-    this.scale = Math.min(Math.max(0.25, scale), 2);
+    this.scale = Math.min(Math.max(0.25, scale), 4);
     const canvas = this.$refs.canvas as HTMLCanvasElement;
     canvas.style.transform = `translate(-50%, -50%) scale(${this.scale})`;
     this.draw();
   }
 
+  wheelStage(event: WheelEvent): void {
+    // console.log(event);
+    event.preventDefault();
+  }
+
   wheelDeBounce(event: WheelEvent) {
     this.wheelDe(event);
     event.preventDefault();
+    event.stopPropagation();
   }
 
   // 绘制
   draw() {
-    console.log('resize');
     const { clientWidth, clientHeight } = this.$refs
       .canvas as HTMLCanvasElement;
+    const { clientWidth: stageWidth, clientHeight: stageHeight } = this.$el;
 
     this.ruleX.draw(
       this.scale,
-      (this.stageWidth - clientWidth * this.scale) / 2 - 24,
+      (stageWidth - clientWidth * this.scale) / 2 - 24,
     );
     this.ruleY.draw(
       this.scale,
-      (this.stageHeight - clientHeight * this.scale) / 2 - 24,
+      (stageHeight - clientHeight * this.scale) / 2 - 24,
     );
   }
 
   mounted() {
-    const { clientWidth, clientHeight } = this.$el;
-    this.stageWidth = clientWidth;
-    this.stageHeight = clientHeight;
-
     const canvasRuleX = this.$refs.ruleX as HTMLCanvasElement;
     const canvasRuleY = this.$refs.ruleY as HTMLCanvasElement;
     this.ruleX = new rule.Rule(canvasRuleX, 1);
@@ -88,7 +90,7 @@ export default class HelloWorld extends Vue {
   background-size: 20px 20px;
 
   .draw {
-    width: 800px;
+    width: 1000px;
     height: 400px;
     position: absolute;
     background: #ffffff;
@@ -114,6 +116,15 @@ export default class HelloWorld extends Vue {
     background: #0e1013;
     height: 100%;
     width: 24px;
+  }
+
+  .reset-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background: #0e1013;
   }
 }
 </style>
