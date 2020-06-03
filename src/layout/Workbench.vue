@@ -1,5 +1,5 @@
 <template>
-  <div class="workbench-wrapper" @wheel="wheel">
+  <div class="workbench-wrapper" @wheel="wheelDeBounce">
     <canvas ref="canvas" class="draw"></canvas>
     <canvas ref="ruleX" class="rule-x"></canvas>
     <canvas ref="ruleY" class="rule-y"></canvas>
@@ -11,30 +11,69 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import * as rule from '@/components/Rule/index.ts';
 
+function debounce(fn: Function, wait = 100): Function {
+  let timer: number | undefined;
+  return function(args: WheelEvent) {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn(args);
+    }, wait);
+  };
+}
+
 @Component
 export default class HelloWorld extends Vue {
   // data
   private scale = 1;
+  private stageWidth = 0;
+  private stageHeight = 0;
+  private wheelDe: Function = debounce(this.wheel, 7);
+  private ruleX!: rule.Rule;
+  private ruleY!: rule.Rule;
 
   // prop
   @Prop() private msg!: string;
   // method
   wheel(event: WheelEvent): void {
     const scale: number = this.scale + event.deltaY * -0.01;
-    this.scale = Math.min(Math.max(0.125, scale), 4);
+    this.scale = Math.min(Math.max(0.25, scale), 2);
     const canvas = this.$refs.canvas as HTMLCanvasElement;
-    canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    canvas.style.transform = `translate(-50%, -50%) scale(${this.scale})`;
+    this.draw();
+  }
 
+  wheelDeBounce(event: WheelEvent) {
+    this.wheelDe(event);
     event.preventDefault();
   }
 
+  // 绘制
+  draw() {
+    console.log('resize');
+    const { clientWidth, clientHeight } = this.$refs
+      .canvas as HTMLCanvasElement;
+
+    this.ruleX.draw(
+      this.scale,
+      (this.stageWidth - clientWidth * this.scale) / 2 - 24,
+    );
+    this.ruleY.draw(
+      this.scale,
+      (this.stageHeight - clientHeight * this.scale) / 2 - 24,
+    );
+  }
+
   mounted() {
+    const { clientWidth, clientHeight } = this.$el;
+    this.stageWidth = clientWidth;
+    this.stageHeight = clientHeight;
+
     const canvasRuleX = this.$refs.ruleX as HTMLCanvasElement;
     const canvasRuleY = this.$refs.ruleY as HTMLCanvasElement;
-    const ruleX = new rule.Rule(canvasRuleX, 1);
-    const ruleY = new rule.Rule(canvasRuleY, 0);
-    ruleX.init();
-    ruleY.init();
+    this.ruleX = new rule.Rule(canvasRuleX, 1);
+    this.ruleY = new rule.Rule(canvasRuleY, 0);
+    this.draw();
+    window.addEventListener('resize', this.draw);
   }
 }
 </script>
@@ -49,6 +88,8 @@ export default class HelloWorld extends Vue {
   background-size: 20px 20px;
 
   .draw {
+    width: 800px;
+    height: 400px;
     position: absolute;
     background: #ffffff;
     left: 50%;
@@ -72,7 +113,7 @@ export default class HelloWorld extends Vue {
     left: 0;
     background: #0e1013;
     height: 100%;
-    width: 200px;
+    width: 24px;
   }
 }
 </style>
