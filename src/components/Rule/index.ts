@@ -45,14 +45,14 @@ export class Rule {
 
   // 绘制轴
   setAxis(ctx: CanvasRenderingContext2D, scale: number, start: number) {
-    ctx.strokeStyle = '#90a0ae';
-    ctx.lineWidth = 1;
-
     const { isHorizontal, ratio, width, height, ticks } = this;
     const line: number = isHorizontal ? height * ratio : width * ratio; // 刻度线长度
     const axis: number = isHorizontal ? width : height; // 轴长
     const startTick = start < 0 ? 0 : -Math.floor(start);
     const endTick = start < 0 ? axis - Math.floor(start) : axis;
+
+    const lineWidth = 0.5 * ratio;
+    ctx.strokeStyle = '#90a0ae';
 
     let actualTick;
     if (scale > 1) {
@@ -62,6 +62,12 @@ export class Rule {
     }
     const tick = ticks[actualTick];
     for (let j = startTick; j * tick < endTick / scale; j++) {
+      ctx.lineWidth =
+        j % 10 === 0
+          ? lineWidth * 2
+          : j % 5 === 0
+          ? lineWidth * 1.5
+          : lineWidth;
       const i = j * scale; // i => interval  每个格子间隔距离
       const from: Point = {
         x: (i * tick + start) * ratio,
@@ -84,7 +90,7 @@ export class Rule {
       );
       const text: Point = {
         x: (i * tick + start) * ratio + 2,
-        y: 12,
+        y: 6 * ratio,
       };
       if (j % 10 === 0) {
         this.drawText(
@@ -95,6 +101,7 @@ export class Rule {
             y: isHorizontal ? text.y : text.x,
           } as Point,
           isHorizontal,
+          ratio,
         );
       }
     }
@@ -106,6 +113,7 @@ export class Rule {
     ctx: CanvasRenderingContext2D,
     position: Point,
     isHorizontal: boolean,
+    ratio: number,
   ): void {
     if (!isHorizontal) {
       ctx.save();
@@ -113,7 +121,7 @@ export class Rule {
       ctx.rotate(Math.PI / 2);
     }
     ctx.fillStyle = '#90a0ae';
-    ctx.font = `${20}px Arial`;
+    ctx.font = `${10 * ratio}px Arial`;
     ctx.textBaseline = 'middle';
     ctx.fillText(
       `${tick}`,
